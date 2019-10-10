@@ -1,0 +1,15 @@
+PLAYERS
+yishan
+mulan
+rileigh
+kaiqi
+mom
+dad
+$ROUND 1
+yishan&mulan&yishan
+riliegh&kaiqi&tie
+mom&dad&mom
+DROP
+#
+$ROUND 2
+
