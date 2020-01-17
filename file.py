@@ -6,9 +6,9 @@ Created on Jan 27, 2018
 '''
 def get_names(fob)->[str]:
     players = []
-    for num, line in enumerate(fob):
+    for line in fob:
         line = line.rstrip()
-        players.append(Player.Player(line, num))
+        players.append(Player.Player(line))
     return players
 
 
@@ -17,7 +17,7 @@ def run_from_file(filename):
 	savefile = open(filename, 'r')
 	round_num = savefile.readline().rstrip()
 	round_num = int(round_num)
-	playerNames = savefile.readline().rstrip().split(' ')
+	playerNames = savefile.readline().rstrip().split(',')[0:-1]
 	currentPlayer = ""
 	entryCategory = None
 	for name in playerNames:

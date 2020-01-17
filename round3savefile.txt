@@ -84,4 +84,4 @@ tanios
 $losses
 $ties
 lucas
-*pairs:lucas,tanios,kyle,aaron,colby,elder,jack,darren,jimmy,mark,bailey,jorge,jonathan,yishan,
+*pairs:lucas,tanios,kyle,aaron,colby,elder,jack,darren,jimmy,mark,bailey,jorge,jonathan,yishan,*pairs:jonathan,two names,xd,omg,penis,haha,fuck me,jorge,,BYE,*pairs:fuck me,xd,haha,omg,jonathan,two names,jorge,penis,

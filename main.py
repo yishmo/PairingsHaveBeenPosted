@@ -9,8 +9,6 @@ import file
 import random
 import math
 import Player
-import numpy as np
-from scipy.optimize import minimize
 
 num_rounds = 0
 
@@ -51,7 +49,7 @@ def loss_fn(players):
         if check_if_played_before(seat[0], seat[1]):
             loss += 100000
         try:
-            loss += np.absolute(seat[0].get_points()-seat[1].get_points())
+            loss += abs(seat[0].get_points()-seat[1].get_points())
         except AttributeError:
             loss += seat[0].get_points() * 5
             pass
@@ -144,17 +142,27 @@ def calculate_num_rounds(players):
     else:
         num_rounds = 12
 
-def drop_player(players):
+#this function now does double duty at the end of the round
+#it drops, adds or prints standings
+def end_of_round_cleanup(players):
     while True:
-        dropping = prompt.for_string("Enter the name of player who is dropping or (p)air next round"
-                                    , is_legal= lambda x : x in [y.name for y in players] or x == 'p', error_message='Invalid player name or not p')
+        dropping = prompt.for_string("Enter the name of player who is dropping or (p)air next round or view (s)tandings or (a)dd a new player"
+                                    , is_legal= lambda x : x in [y.name for y in players] or x == 'p' or x == 's' or x == 'a',
+                                    error_message='Invalid player name or not p')
         if dropping == 'p':
             break;
-        for i in range(len(players)):
-            if dropping == players[i].name:
-                print(players[i].name, 'has been dropped.')
-                del players[i]
-                break
+        elif dropping == 's':
+            calculate_standings(players)
+            print_standings(players)
+        elif dropping == 'a':
+            players.append(Player.Player(input('Enter the name of the new player: ')))
+
+        else:
+            for i in range(len(players)):
+                if dropping == players[i].name:
+                    print(players[i].name, 'has been dropped.')
+                    del players[i]
+                    break
 
         print()
     
@@ -162,9 +170,12 @@ def get_results(pairs, players):
     still_playing = set(range(1, len(pairs) + 1))
     while len(still_playing)>0:
         print("Waiting for results from tables", still_playing)
-        table = prompt.for_int("Enter a table number to report results", is_legal = lambda x : x in still_playing, error_message="Enter a table that has not finished their match.")
+        table = prompt.for_int("Enter a table number to report results", is_legal = lambda x : x in still_playing,
+                                error_message="Enter a table that has not finished their match.")
         table -= 1
-        winner = prompt.for_string("Enter a winner ("+ str(pairs[table][0].name) + ") or (" + str(pairs[table][1].name) + ") or (tie)", is_legal = (lambda x : x == pairs[table][0].name or x == pairs[table][1].name or x == "tie"), error_message="please enter the winner's full name or tie")
+        winner = prompt.for_string("Enter a winner ("+ str(pairs[table][0].name) + ") or (" + str(pairs[table][1].name) + ") or (tie)",
+                                    is_legal = (lambda x : x == pairs[table][0].name or x == pairs[table][1].name or x == "tie"),
+                                    error_message="please enter the winner's full name or tie")
         if winner == 'tie':
             pairs[table][0].ties.append(pairs[table][1])
             pairs[table][1].ties.append(pairs[table][0])
@@ -181,25 +192,28 @@ def get_results(pairs, players):
 
         
 def calculate_standings(players):
-    for player in players:
-        player.tiebreaker += str(player.get_points())
-    
-    for player in players:
-        if get_opponents_win_percentage(player) == 0:
-            player.tiebreaker += "000"
-        else:
-            player.tiebreaker += str(int(round(get_opponents_win_percentage(player), 3)*1000))
-        num_opponents = 0
-        percentage = 0
-        for opponent in (player.wins + player.losses + player.ties):
-            if opponent != "BYE":
-                percentage += get_opponents_win_percentage(opponent)
-                num_opponents += 1
+    try:
+        for player in players:
+            player.tiebreaker += str(player.get_points())
         
-        if percentage/num_opponents == 0:
-            player.tiebreaker += "000"
-        else:
-            player.tiebreaker+= str(int(round(percentage/num_opponents, 3)*1000))
+        for player in players:
+            if get_opponents_win_percentage(player) == 0:
+                player.tiebreaker += "000"
+            else:
+                player.tiebreaker += str(int(round(get_opponents_win_percentage(player), 3)*1000))
+            num_opponents = 0
+            percentage = 0
+            for opponent in (player.wins + player.losses + player.ties):
+                if opponent != "BYE":
+                    percentage += get_opponents_win_percentage(opponent)
+                    num_opponents += 1
+            
+            if percentage/num_opponents == 0:
+                player.tiebreaker += "000"
+            else:
+                player.tiebreaker+= str(int(round(percentage/num_opponents, 3)*1000))
+    except ZeroDivisionError: #this means the player played no games
+        player.tiebreaker = '0000000'
             
 
 def get_opponents_win_percentage(player):
@@ -237,11 +251,12 @@ def run_tournament(players, roundNumber, pairs=None):
         write_to_file(players, roundNumber)
         append_pairings_to_file("round{}savefile.txt".format(roundNumber), pairs)
         print()
+        import pdb;pdb.set_trace()
         if len(players)%2 != 0: #if there is a BYE
             pairs[len(pairs)-1][0].wins.append('BYE')#give the player that has a BYE a win
             del pairs[len(pairs)-1] #delete that pairing before get results is called
         get_results(pairs, players)
-        drop_player(players)
+        end_of_round_cleanup(players)
         roundNumber +=1
         print("*Results up to round " + str(roundNumber - 1) + " have been saved.\n")
         pairs = None #need to reset pairs to none so that we generate a new set of pairs
@@ -257,12 +272,13 @@ def run_from_file(filename):
     savefile = open(filename, 'r')
     round_num = savefile.readline().rstrip()#First line in savefile is current round number
     round_num = int(round_num)
-    playerNames = savefile.readline().rstrip().split(' ')#second line has all player names
+    playerNames = savefile.readline().rstrip().split(',')[0:-1]#second line has all player names, there is an extra comma at the end
+                                                               #which causes a player with the empty string name, we delete that player here
     currentPlayer = ""
     entryCategory = None
     pairs = [] #this value will store pairs
     for num, name in enumerate(playerNames):
-        playerdict[name] = Player.Player(name, num)#Create all player objects and put them in the playerdict
+        playerdict[name] = Player.Player(name)#Create all player objects and put them in the playerdict
     for line in savefile:
         line = line.rstrip()
         if line == "":#there shouldn't be any empty lines (except for the last line)
@@ -273,7 +289,7 @@ def run_from_file(filename):
             entryCategory = line[1:]
         elif line[0] == "*":#this is a special case, at the end of the file there will be pairings that we need to keep track of
             people = line.split(":")[1]
-            peopleList = people.split(",")
+            peopleList = people.split(",")[0:-1] #again there is an extra comma, which we need to delete 
             for i in range(0, len(peopleList)-1, 2):
                 pairs.append([playerdict[peopleList[i]], playerdict[peopleList[i+1]]])
         else:
@@ -292,10 +308,10 @@ def run_from_file(filename):
 
 
 def write_to_file(players, round):
-    savefile = open("round{}savefile.txt".format(round), "w")
+    savefile = open("{}".format(round), "w")
     savefile.write(str(round)+"\n")
     for player in players:
-        savefile.write(player.name + " ")
+        savefile.write(player.name + ",")
     savefile.write("\n")
     for player in players:
         savefile.write("%"+player.name+"\n")

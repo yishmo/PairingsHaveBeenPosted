@@ -4,9 +4,8 @@ Created on Jan 27, 2018
 @author: Yishan McNabb
 '''
 class Player:
-    def __init__(self,name,number):
+    def __init__(self,name):
         self.name = name
-        self.number = number
         self.wins = []
         self.losses = []
         self.ties = []
