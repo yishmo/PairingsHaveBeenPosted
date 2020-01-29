@@ -194,6 +194,8 @@ def get_results(pairs, players):
 def calculate_standings(players):
     try:
         for player in players:
+            #reset the players to have an empty string
+            player.tiebreaker = ''
             player.tiebreaker += str(player.get_points())
         
         for player in players:
