@@ -249,9 +249,8 @@ def run_tournament(players, roundNumber, pairs=None):
             pairs = pair_round(players)
         print_pairings(pairs)
         write_to_file(players, roundNumber)
-        append_pairings_to_file("round{}savefile.txt".format(roundNumber), pairs)
+        append_pairings_to_file(f"{roundNumber}", pairs)
         print()
-        import pdb;pdb.set_trace()
         if len(players)%2 != 0: #if there is a BYE
             pairs[len(pairs)-1][0].wins.append('BYE')#give the player that has a BYE a win
             del pairs[len(pairs)-1] #delete that pairing before get results is called
