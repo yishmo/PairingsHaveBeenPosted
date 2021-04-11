@@ -11,6 +11,7 @@ import math
 import Player
 
 num_rounds = 0
+dropped_players = []
 
 def check_if_played_before(player1, player2):
     for opponent in player1.get_opponents():
@@ -165,6 +166,11 @@ def end_of_round_cleanup(players):
             for i in range(len(players)):
                 if dropping == players[i].name:
                     print(players[i].name, "has been dropped.")
+                    global dropped_players
+                    #add the '#' character to signify that the player has been dropped 
+                    #for run_from_file purposes
+                    players[i].name = '#' + players[i].name
+                    dropped_players.append(players[i])
                     del players[i]
                     break
 
@@ -354,6 +360,14 @@ def run_from_file(filename):
 
     del playerdict["BYE"]
     players = list(playerdict.values())
+
+    #separate dropped players from remaining players by looking for '#' character
+    global dropped_players
+    for i in range(len(players)):
+        if players[i].name[0] == '#':
+            dropped_players.append(players[i])
+            del players[i]
+            
     savefile.close()
     run_tournament(players, round_num, pairs)
 
@@ -361,10 +375,10 @@ def run_from_file(filename):
 def write_to_file(players, round):
     savefile = open("{}".format(round), "w")
     savefile.write(str(round) + "\n")
-    for player in players:
+    for player in players + dropped_players:
         savefile.write(player.name + ",")
     savefile.write("\n")
-    for player in players:
+    for player in players + dropped_players:
         savefile.write("%" + player.name + "\n")
         savefile.write("$wins\n")
         for opponent in player.wins:
