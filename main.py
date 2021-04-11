@@ -451,19 +451,8 @@ def main():
                 run_tournament(players, 1)
                 break
             else:
-                print("Edit file then hit enter.")
-                input()
-                fob = goody.safe_open(
-                    "Name of file with players",
-                    "r",
-                    "There was an error finding/opening the file.",
-                    default="players.txt",
-                )
-                players = file.get_names(fob)
-                for player in players:
-                    print(player.name)
+                pass
 
-        fob.close()
 
 
 if __name__ == "__main__":

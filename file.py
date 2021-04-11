@@ -5,10 +5,18 @@ Created on Jan 27, 2018
 @author: Yishan McNabb
 '''
 def get_names(fob)->[str]:
+    illegal_player_names = {'p', 's', 'a'}
     players = []
     for line in fob:
-        line = line.rstrip()
-        players.append(Player.Player(line))
+        if line[0] != '#':
+            line = line.rstrip()
+            if line in illegal_player_names:
+                while True:
+                    print('p, s, a are not legal player names as they conflict with menu options, please restart the program with legal player names')
+                    input()
+                    
+            players.append(Player.Player(line))
+
     return players
 
 
