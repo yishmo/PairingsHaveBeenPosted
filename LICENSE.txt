@@ -1,0 +1,7 @@
+Copyright 2021 Yishan McNabb, All Rights Reserved.
+
+1. Use of this program is conditioned on following the rules laid out in this License.
+2. You are free to use this program AS IS (even commercially). You may not modify this program.
+3. Yishan McNabb is absolved of all liability when it comes to the behavior of the program, i.e. you can't sue me if the program has a bug or doesn't work they way you want it to and messes up your tournament)
+4. You cannot keep the use of this program a secret. If someone asks you what program you are using you must direct them to this link: https://github.com/yishmo/PairingsHaveBeenPosted
+5. Yishan McNabb retains the right to tell you (verbally or in writing) to stop using the program and you must stop.

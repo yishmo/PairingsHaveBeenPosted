@@ -1,0 +1,8 @@
+#put each tournament participant on his or her own line (lines that start with the '#' character will be ignored).
+subscribe
+to
+Yishan's
+YouTube
+channel
+please
+#www.youtube.com/c/Yishan
