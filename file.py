@@ -7,6 +7,7 @@ Created on Jan 27, 2018
 def get_names(fob)->[str]:
     illegal_player_names = {'p', 's', 'a'}
     players = []
+    player_names = set()
     for line in fob:
         if line[0] != '#':
             line = line.rstrip()
@@ -16,6 +17,15 @@ def get_names(fob)->[str]:
                     input()
                     
             players.append(Player.Player(line))
+            player_names.add(line)
+
+    if len(player_names) != len(players):
+                while True:
+                    print('Two players cannot have the exact same name, please fix and restart the program')
+                    input()
+
+
+
 
     return players
 

@@ -71,17 +71,30 @@ def pair_round(players):
         if loss < 99999:
             return players_to_seats(players)
 
-    # Complete Randomness
-    for i in range(200000):
-        random.shuffle(players)
-        loss = loss_fn(players)
-        if loss == 0:
-            return players_to_seats(players)
-        if loss < min:
-            min = loss
-            players_copy = list(players)
+    #otherwise we search for an optimal seat pairing through brute force
+    #looking to change this into something more elegant but it's the
+    #best i've got for now...
+    min_updated = True
+    iteration = 0
+    while min_updated:
+        min_updated=False
+        for i in range(len(players) * 100 * (2**iteration)):
+            random.shuffle(players)
+            loss = loss_fn(players)
+            if loss < min:
+                print('found new minimum at iteration', iteration)
+                min = loss
+                players_copy = list(players)
+                #once you find a minimum the next one will be harder to find
+                #if it exists so we increase the amount we search for
+                iteration += 1
+                min_updated = True
+                break
 
     if min == 99999:
+        #if something goes wrong here it means everyone
+        #has already played everyone else, which is very
+        #very worrisome
         assert False
 
     print("The minimum was:", min)
@@ -147,7 +160,7 @@ def calculate_num_rounds(players):
 def end_of_round_cleanup(players):
     while True:
         dropping = prompt.for_string(
-            "Enter the name of player who is dropping or (p)air next round or view (s)tandings or (a)dd a new player",
+            "Enter the (name of a player) who is dropping or (p)air next round or view (s)tandings or (a)dd a new player",
             is_legal=lambda x: x in [y.name for y in players]
             or x == "p"
             or x == "s"
@@ -160,7 +173,11 @@ def end_of_round_cleanup(players):
             calculate_standings(players)
             print_standings(players)
         elif dropping == "a":
-            players.append(Player.Player(input("Enter the name of the new player: ")))
+            new_player = Player.Player(input("Enter the name of the new player: "))
+            num_byes = prompt.for_int("Enter the number of byes this player has (if any). For example if this player is entering with a round 1 loss, enter 0. If this player is entering round 2 with a 1-0 record enter 1", is_legal=lambda x : x < num_rounds, error_message='A player should not have more byes than the total number of rounds.')
+            for i in range(num_byes):
+                new_player.wins.append('BYE') 
+            players.append(new_player)
 
         else:
             for i in range(len(players)):
@@ -413,7 +430,7 @@ def print_welcome_screen():
     print("Welcome to Yishan's Tournament Software!\n")
     print("---------------How To Use---------------\n")
     print("1. Press s or n to either load a saved tournament or start a new one.")
-    print("2. Find the players.txt file and enter participans on separate lines.")
+    print("2. Find the PutYourTournamentParticipantsHere.txt file and enter participans on separate lines.")
     print(
         "3. Follow on screen prompts to run tournament, all command available are enclosed in ().\n"
     )
@@ -422,12 +439,12 @@ def print_welcome_screen():
 def main():
     print_welcome_screen()
     shouldLoadFromSavefile = prompt.for_string(
-        "Load a (s)aved tournament or start a (n)ew one?",
-        is_legal=(lambda x: x == "s" or x == "n"),
-        error_message="Please enter s or n.",
+        "Do you want to start a (n)ew tournament or (r)eload a tournament?",
+        is_legal=(lambda x: x == "r" or x == "n"),
+        error_message="Please enter n or r.",
     )
-    if shouldLoadFromSavefile == "s":
-        fileStr = prompt.for_string("Enter the name of the savefile")
+    if shouldLoadFromSavefile == "r":
+        fileStr = prompt.for_string("Enter the (round number) you want to reload from")
         run_from_file(fileStr)
     else:
         fob = goody.safe_open(
@@ -440,21 +457,21 @@ def main():
         while len(players) < 4:
             print()
             print(
-                "You need at least 4 players to start a tournaments, please edit your file and press enter"
+                "You need at least 4 players to start a tournaments, please edit PutYourTournamentParticipantsHere.txt and press enter"
             )
             input()
             fob.close()
             fob = goody.safe_open(
-                "Name of file with players",
+                "Don't forget to save the file!",
                 "r",
                 "There was an error finding/opening the file.",
-                default="players.txt",
+                default="PutYourTournamentParticipantsHere.txt",
             )
             players = file.get_names(fob)
 
-        for player in players:
-            print(player.name)
         while True:
+            for player in players:
+                print(player.name)
             print("***There are currently", len(players), "players enrolled.***")
             start = prompt.for_string(
                 "Start tournament? Enter (y)es or (n)o",
@@ -465,7 +482,7 @@ def main():
                 run_tournament(players, 1)
                 break
             else:
-                pass
+                exit() 
 
 
 
