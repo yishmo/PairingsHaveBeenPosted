@@ -9,6 +9,7 @@ import file
 import random
 import math
 import Player
+import sys
 
 num_rounds = 0
 dropped_players = []
@@ -482,7 +483,7 @@ def main():
                 run_tournament(players, 1)
                 break
             else:
-                exit() 
+                sys.exit("Ok, no rush! Restart the program when you're ready!") 
 
 
 
